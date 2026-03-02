@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>History Flashcards</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+:root {
+–bg: #0f0e0c;
+–card-front: #1a1814;
+–card-back: #12110e;
+–gold: #c9a84c;
+–gold-light: #e8c97a;
+–text: #e8e0d0;
+–muted: #7a7060;
+–border: #2a2620;
+}
+
+body {
+background: var(–bg);
+color: var(–text);
+font-family: ‘Source Serif 4’, Georgia, serif;
+min-height: 100vh;
+min-height: -webkit-fill-available;
+display: flex;
+flex-direction: column;
+align-items: center;
+padding: 20px 16px 40px;
+overflow-x: hidden;
+}
+
+header {
+text-align: center;
+margin-bottom: 28px;
+width: 100%;
+}
+
+header h1 {
+font-family: ‘Playfair Display’, Georgia, serif;
+font-size: clamp(1.2rem, 4vw, 1.6rem);
+color: var(–gold);
+letter-spacing: 0.04em;
+text-transform: uppercase;
+}
+
+.progress-bar-wrap {
+width: 100%;
+max-width: 480px;
+margin: 10px auto 0;
+height: 2px;
+background: var(–border);
+border-radius: 2px;
+overflow: hidden;
+}
+
+.progress-bar {
+height: 100%;
+background: var(–gold);
+transition: width 0.4s ease;
+}
+
+.counter {
+font-size: 0.8rem;
+color: var(–muted);
+margin-top: 8px;
+letter-spacing: 0.08em;
+}
+
+/* Card scene */
+.scene {
+width: 100%;
+max-width: 480px;
+perspective: 1000px;
+margin-bottom: 28px;
+}
+
+.card {
+width: 100%;
+min-height: 260px;
+position: relative;
+transform-style: preserve-3d;
+transition: transform 0.55s cubic-bezier(.4,0,.2,1);
+cursor: pointer;
+border-radius: 14px;
+}
+
+.card.flipped { transform: rotateY(180deg); }
+
+.card-face {
+position: absolute;
+width: 100%;
+min-height: 260px;
+backface-visibility: hidden;
+-webkit-backface-visibility: hidden;
+border-radius: 14px;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+padding: 32px 28px;
+border: 1px solid var(–border);
+}
+
+.card-front {
+background: var(–card-front);
+}
+
+.card-back {
+background: var(–card-back);
+transform: rotateY(180deg);
+}
+
+.card-label {
+font-size: 0.65rem;
+letter-spacing: 0.18em;
+text-transform: uppercase;
+color: var(–gold);
+margin-bottom: 18px;
+opacity: 0.8;
+}
+
+.card-number {
+position: absolute;
+top: 14px;
+right: 18px;
+font-size: 0.7rem;
+color: var(–muted);
+letter-spacing: 0.06em;
+}
+
+.card-term {
+font-family: ‘Playfair Display’, Georgia, serif;
+font-size: clamp(1.4rem, 5vw, 2rem);
+text-align: center;
+color: var(–text);
+line-height: 1.3;
+}
+
+.card-definition {
+font-size: clamp(0.9rem, 3.2vw, 1.05rem);
+text-align: center;
+line-height: 1.7;
+color: var(–text);
+font-weight: 300;
+font-style: italic;
+}
+
+.tap-hint {
+position: absolute;
+bottom: 14px;
+font-size: 0.65rem;
+color: var(–muted);
+letter-spacing: 0.1em;
+text-transform: uppercase;
+}
+
+/* Controls */
+.controls {
+display: flex;
+gap: 14px;
+width: 100%;
+max-width: 480px;
+margin-bottom: 20px;
+}
+
+.btn {
+flex: 1;
+padding: 14px;
+border: 1px solid var(–border);
+background: var(–card-front);
+color: var(–text);
+font-family: ‘Source Serif 4’, serif;
+font-size: 0.85rem;
+letter-spacing: 0.06em;
+border-radius: 10px;
+cursor: pointer;
+transition: background 0.2s, border-color 0.2s, color 0.2s;
+-webkit-appearance: none;
+}
+
+.btn:active { opacity: 0.75; }
+
+.btn-prev:hover, .btn-prev:active { border-color: var(–muted); }
+.btn-next { border-color: var(–gold); color: var(–gold); }
+.btn-next:hover, .btn-next:active { background: var(–gold); color: var(–bg); }
+
+.btn-shuffle {
+width: 100%;
+max-width: 480px;
+padding: 12px;
+background: transparent;
+border: 1px dashed var(–border);
+color: var(–muted);
+font-family: ‘Source Serif 4’, serif;
+font-size: 0.78rem;
+letter-spacing: 0.1em;
+text-transform: uppercase;
+border-radius: 10px;
+cursor: pointer;
+-webkit-appearance: none;
+}
+
+.btn-shuffle:active { opacity: 0.7; }
+
+/* Ornament */
+.ornament {
+color: var(–gold);
+opacity: 0.3;
+font-size: 1.2rem;
+margin-bottom: 12px;
+}
+
+/* Swipe animation */
+.card-wrap {
+width: 100%;
+}
+
+@keyframes slideIn {
+from { opacity: 0; transform: translateX(40px); }
+to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInLeft {
+from { opacity: 0; transform: translateX(-40px); }
+to { opacity: 1; transform: translateX(0); }
+}
+
+.scene.anim-next .card { animation: slideIn 0.3s ease; }
+.scene.anim-prev .card { animation: slideInLeft 0.3s ease; }
+</style>
+
+</head>
+<body>
+
+<header>
+  <div class="ornament">✦</div>
+  <h1>World History</h1>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+  <div class="counter" id="counter">1 / 60</div>
+</header>
+
+<div class="scene" id="scene">
+  <div class="card" id="card" onclick="flipCard()">
+    <div class="card-face card-front">
+      <div class="card-number" id="cardNumber">01</div>
+      <div class="card-label">Term</div>
+      <div class="card-term" id="termText"></div>
+      <div class="tap-hint">Tap to reveal</div>
+    </div>
+    <div class="card-face card-back">
+      <div class="card-number" id="cardNumberBack">01</div>
+      <div class="card-label">Definition</div>
+      <div class="card-definition" id="defText"></div>
+      <div class="tap-hint">Tap to flip back</div>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="btn btn-prev" onclick="navigate(-1)">← Prev</button>
+  <button class="btn btn-next" onclick="navigate(1)">Next →</button>
+</div>
+
+<button class="btn-shuffle" onclick="shuffle()">⇄ Shuffle Cards</button>
+
+<script>
+const original = [
+  ["Sepoys","Indian soldiers recruited and trained by the British East India Company (later British army) to maintain control over India."],
+  ["British Raj","Direct British colonial rule over India from 1858 (after the Sepoy Mutiny) until independence in 1947."],
+  ["Robert Clive","British East India Company general who won the Battle of Plassey (1757), laying the foundation for British control of Bengal and eventually all of India."],
+  ["Nabobs","British East India Company officials who made huge fortunes in India and returned to Britain to display their wealth (often corruptly)."],
+  ["Isandhlwana","1879 battle in which Zulu warriors decisively defeated a British force, the worst British defeat against an African army in the 19th century."],
+  ["Tropical Dependencies","Colonies in hot climates (Africa, Asia, Caribbean) where few Europeans settled; ruled by a tiny European elite over a large indigenous population."],
+  ["Settlement Colonies","Colonies (U.S., Canada, Australia, New Zealand, South Africa) where large numbers of Europeans migrated and created societies modeled on their home countries."],
+  ["Extraction (Economic)","Colonial economic system focused on removing raw materials and wealth from the colony with minimal investment in local development or infrastructure."],
+  ["Boer Republics","Independent states (Transvaal and Orange Free State) established by Dutch-descended Boers in southern Africa in the mid-19th century."],
+  ["Cecil Rhodes","British imperialist, diamond magnate, and Cape Colony prime minister who pushed for British expansion across Africa ("Cape to Cairo") and founded Rhodesia."],
+  ["Captain James Cook","British explorer whose Pacific voyages (1768–1779) claimed Australia and New Zealand for Britain and opened the region to European settlement."],
+  ["Father Miguel de Hidalgo","Mexican parish priest who issued the "Grito de Dolores" in 1810, sparking the first major phase of the Mexican independence movement."],
+  ["Augustin de Iturbide","Mexican military leader who switched sides in 1821, joined the independence forces, and briefly became Emperor Agustín I of Mexico."],
+  ["Simon Bolivar","Venezuelan "Liberator" who led the independence wars that freed Venezuela, Colombia, Ecuador, Peru, and Bolivia from Spanish rule."],
+  ["Gran Colombia","Short-lived republic (1819–1830) created by Simón Bolívar that included present-day Colombia, Venezuela, Ecuador, and Panama."],
+  ["Jose de San Martin","Argentine general who led the liberation of Chile and Peru; crossed the Andes with an army in 1817 to defeat Spanish forces."],
+  ["Pedro I","Son of the Portuguese king who declared Brazilian independence in 1822 and became the first emperor of Brazil."],
+  ["Caudillos","Military strongmen who ruled much of Latin America after independence through personal charisma, force, and patronage."],
+  ["Centralists","Latin American political faction that favored strong, centralized national governments with power in the capital."],
+  ["Federalists","Latin American political faction that favored regional autonomy and a federal system giving power to the provinces."],
+  ["General Antonio Lopez de Santa Anna","Mexican general and dictator who lost Texas (1836) and led Mexico to defeat in the Mexican-American War (1846–1848)."],
+  ["Monroe Doctrine","1823 U.S. policy warning European powers not to interfere in or recolonize the newly independent nations of the Western Hemisphere."],
+  ["Guano","Nitrogen-rich bird droppings mined on the islands off Peru and Chile; became a major 19th-century fertilizer export that brought wealth to the region."],
+  ["Positivism","19th-century philosophy (Auguste Comte) emphasizing scientific methods, progress, and order; very popular among Latin American modernizers."],
+  ["Mexican-American War","1846–1848 war in which the United States defeated Mexico and acquired California, New Mexico, and other western territories."],
+  ["Benito Juarez","Zapotec Indian liberal president of Mexico (1858–1872) who led La Reforma, reduced Church power, and resisted French intervention."],
+  ["Porfirio Diaz","Mexican dictator (1876–1911) who modernized the economy and infrastructure but ruled through repression ("order and progress")."],
+  ["Spanish-American War","1898 war in which the U.S. defeated Spain, gained the Philippines, Puerto Rico, and Guam, and established a protectorate over Cuba."],
+  ["Panama Canal","U.S.-built canal (1904–1914) across the Isthmus of Panama that connected the Atlantic and Pacific Oceans after the U.S. helped Panama gain independence from Colombia."],
+  ["Mahmud II","Ottoman sultan (r. 1808–1839) who destroyed the Janissary corps (1826) and began modernizing the military and administration."],
+  ["Tanzimat Reforms","Series of Ottoman modernization reforms (1839–1876) that reorganized the military, law, education, and administration along Western lines."],
+  ["Abdul Hamid","Abdul Hamid II (r. 1876–1909), the "Red Sultan," who suspended the constitution, ruled autocratically, and used secret police to suppress dissent."],
+  ["Ottoman Society for Union and Progress","The "Young Turks" political movement that demanded a constitution and modernization; seized power in 1908."],
+  ["Muhammad Ali (of Egypt)","Albanian Ottoman officer who ruled Egypt (1805–1848) as a semi-independent state; modernized the army, built factories, and grew cotton."],
+  ["Suez Canal","French-engineered canal (opened 1869) linking the Mediterranean and Red Seas; greatly shortened the Europe–Asia sea route."],
+  ["Khartoum","Capital of Sudan where Mahdist forces killed British general Charles Gordon in 1885 during the Mahdist revolt."],
+  ["Mahdi","Muhammad Ahmad, Sudanese religious leader who proclaimed himself the Mahdi and led a successful Islamic revolt against Egyptian/British rule (1881–1885)."],
+  ["Banner Armies","Manchu military organization of the Qing dynasty; elite "banner" units that conquered China and formed the core of Qing military power."],
+  ["Qing","Last imperial dynasty of China (1644–1911), ruled by Manchus."],
+  ["Kangxi","Longest-reigning Qing emperor (1661–1722); consolidated Manchu rule, patronized Chinese culture, and expanded territory."],
+  ["Opium Wars","Two wars (1839–1842 and 1856–1860) in which Britain (and allies) defeated Qing China to force the legalization of opium and open Chinese ports."],
+  ["Taiping Rebellion","Massive 1850–1864 civil war in China led by Hong Xiuquan; resulted in 20–30 million deaths and nearly toppled the Qing dynasty."],
+  ["Hong Xiuquan","Failed civil-service exam candidate who believed he was the younger brother of Jesus and led the Taiping Rebellion."],
+  ["Self-Strengthening Movement","1860s–1890s Qing reform effort to adopt Western military technology and industry while preserving Confucian culture."],
+  ["Cixi","Empress Dowager who effectively ruled China from 1861 to 1908; conservative and anti-reform in her later years."],
+  ["Boxer Rebellion","1900 anti-foreign, anti-Christian uprising in northern China by the "Society of Righteous and Harmonious Fists" (Boxers); crushed by an eight-nation alliance."],
+  ["Sun Yat-sen","Chinese revolutionary leader, founder of the Guomindang (Nationalist Party), and first president of the Republic of China (1912)."],
+  ["Crimean War","1853–1856 war in which Russia lost to an Ottoman-British-French alliance; exposed Russia's backwardness and led to internal reforms."],
+  ["Zemstvoes","Elected local assemblies created in Russia after the 1861 emancipation of the serfs to handle local government and public services."],
+  ["Trans-Siberian Railroad","Massive Russian railroad (1891–1916) linking Moscow to Vladivostok; facilitated Russian expansion into Siberia and East Asia."],
+  ["Intelligentsia","Educated, critical middle-class Russians (writers, students, professionals) who debated radical political and social ideas in the late 19th century."],
+  ["Anarchists","Russian revolutionaries who opposed all forms of government and sometimes used terrorism to destabilize the tsarist regime."],
+  ["Bolsheviks","Radical Marxist faction of the Russian Social Democratic Party led by Lenin; seized power in the October 1917 Revolution."],
+  ["Vladimir Ilyich Ulyanov","Better known as Lenin; leader of the Bolsheviks and first head of the Soviet Union."],
+  ["Duma","Russian national parliament created after the 1905 Revolution; had limited powers but gave the people a voice."],
+  ["Kulaks","Relatively wealthy Russian peasants who owned land and hired labor; later targeted by Stalin but already identified as a class in the late 19th century."],
+  ["Commodore Matthew Perry","U.S. naval commander who sailed to Japan in 1853–1854 and forced the opening of Japanese ports to American trade."],
+  ["Diet (Japan)","Japan's bicameral parliament created by the 1889 Meiji Constitution; modeled on European parliaments but with limited power."],
+  ["Zaibatsu","Huge, family-controlled industrial and financial conglomerates (Mitsui, Mitsubishi, Sumitomo, etc.) that dominated the Japanese economy during the Meiji era."],
+  ["Sino-Japanese War","1894–1895 war in which Japan decisively defeated Qing China and gained Taiwan, Pescadores, and dominant influence in Korea."]
+];
+
+let cards = [...original];
+let index = 0;
+let flipped = false;
+
+function render(dir) {
+  const scene = document.getElementById('scene');
+  scene.classList.remove('anim-next','anim-prev');
+  void scene.offsetWidth;
+  if(dir===1) scene.classList.add('anim-next');
+  if(dir===-1) scene.classList.add('anim-prev');
+
+  const card = document.getElementById('card');
+  card.classList.remove('flipped');
+  flipped = false;
+
+  const num = String(index+1).padStart(2,'0');
+  document.getElementById('cardNumber').textContent = num;
+  document.getElementById('cardNumberBack').textContent = num;
+  document.getElementById('termText').textContent = cards[index][0];
+  document.getElementById('defText').textContent = cards[index][1];
+  document.getElementById('counter').textContent = `${index+1} / ${cards.length}`;
+  document.getElementById('progressBar').style.width = `${((index+1)/cards.length)*100}%`;
+}
+
+function flipCard() {
+  flipped = !flipped;
+  document.getElementById('card').classList.toggle('flipped', flipped);
+}
+
+function navigate(dir) {
+  index = (index + dir + cards.length) % cards.length;
+  render(dir);
+}
+
+function shuffle() {
+  for(let i=cards.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [cards[i],cards[j]]=[cards[j],cards[i]];
+  }
+  index=0;
+  render(1);
+}
+
+// Swipe support
+let startX = 0;
+const scene = document.getElementById('scene');
+scene.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, {passive:true});
+scene.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - startX;
+  if(Math.abs(dx) > 50) navigate(dx < 0 ? 1 : -1);
+  else flipCard();
+}, {passive:true});
+
+render(0);
+</script>
+
+</body>
+</html>
