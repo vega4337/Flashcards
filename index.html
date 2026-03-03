@@ -1,243 +1,629 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>History Flashcards</title>
+<title>World History Study App</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 body {
-background: #f5f0e8;
-color: #1a1a1a;
-font-family: Georgia, ‘Times New Roman’, serif;
-min-height: 100vh;
-display: flex;
-flex-direction: column;
-align-items: center;
-padding: 24px 16px 48px;
+  background: #f7f3ed;
+  color: #1c1a17;
+  font-family: Georgia, 'Times New Roman', serif;
+  min-height: 100vh;
+  padding: 0;
 }
 
-header {
-text-align: center;
-margin-bottom: 24px;
-width: 100%;
+/* ── SCREENS ── */
+.screen { display: none; padding: 24px 16px 60px; max-width: 600px; margin: 0 auto; }
+.screen.active { display: block; }
+
+/* ── LANDING ── */
+#landing {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 40px 24px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+#landing.active { display: flex; }
+
+.app-title {
+  font-size: 2rem;
+  font-weight: bold;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #1c1a17;
+  text-align: center;
+  margin-bottom: 6px;
+}
+.app-subtitle {
+  font-size: 0.85rem;
+  color: #8a7e6e;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 52px;
+  text-align: center;
 }
 
-h1 {
-font-size: 1.5rem;
-font-weight: bold;
-letter-spacing: 0.08em;
-text-transform: uppercase;
-color: #1a1a1a;
-margin-bottom: 10px;
+.mode-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 400px;
 }
 
+.mode-card {
+  background: #fff;
+  border: 2px solid #e0d8cc;
+  border-radius: 16px;
+  padding: 28px 24px;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+  text-align: left;
+}
+.mode-card:hover { border-color: #8b5e3c; box-shadow: 0 4px 20px rgba(139,94,60,0.12); transform: translateY(-2px); }
+.mode-card:active { transform: translateY(0); opacity: 0.85; }
+
+.mode-icon { font-size: 1.8rem; margin-bottom: 10px; }
+.mode-name { font-size: 1.15rem; font-weight: bold; color: #1c1a17; margin-bottom: 6px; }
+.mode-desc { font-size: 0.82rem; color: #8a7e6e; line-height: 1.5; font-style: italic; }
+
+/* ── SHARED HEADER ── */
+.screen-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.back-btn {
+  background: #e8e0d0;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-family: Georgia, serif;
+  font-size: 0.85rem;
+  color: #1c1a17;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.back-btn:active { opacity: 0.7; }
+.screen-title {
+  font-size: 1rem;
+  font-weight: bold;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8a7e6e;
+}
+
+/* ── PROGRESS BAR ── */
 .progress-wrap {
-width: 100%;
-max-width: 460px;
-height: 4px;
-background: #d0c8b8;
-border-radius: 4px;
-margin: 0 auto 8px;
-overflow: hidden;
+  width: 100%;
+  height: 4px;
+  background: #e0d8cc;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  overflow: hidden;
 }
-
 .progress-fill {
-height: 100%;
-background: #8b5e3c;
-border-radius: 4px;
-transition: width 0.3s ease;
+  height: 100%;
+  background: #8b5e3c;
+  border-radius: 4px;
+  transition: width 0.35s ease;
+}
+.progress-label {
+  font-size: 0.78rem;
+  color: #8a7e6e;
+  margin-bottom: 20px;
+  letter-spacing: 0.05em;
 }
 
-.counter {
-font-size: 0.85rem;
-color: #666;
-margin-top: 4px;
-}
-
-/* Card */
+/* ── FLASHCARD ── */
 .scene {
-width: 100%;
-max-width: 460px;
-perspective: 1000px;
-margin-bottom: 24px;
-cursor: pointer;
+  width: 100%;
+  perspective: 1000px;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+.fc-card {
+  width: 100%;
+  height: 270px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.5s ease;
+  border-radius: 16px;
+}
+.fc-card.flipped { transform: rotateY(180deg); }
+.fc-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 24px;
+  text-align: center;
+}
+.fc-front {
+  background: #fff;
+  border: 2px solid #e0d8cc;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+.fc-back {
+  background: #2c1f0e;
+  border: 2px solid #2c1f0e;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  transform: rotateY(180deg);
+}
+.fc-label {
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.fc-front .fc-label { color: #8b5e3c; }
+.fc-back .fc-label { color: #c9a07a; }
+.fc-term {
+  font-size: clamp(1.2rem, 4vw, 1.7rem);
+  font-weight: bold;
+  color: #1c1a17;
+  line-height: 1.3;
+}
+.fc-def {
+  font-size: clamp(0.85rem, 3vw, 1rem);
+  color: #f0e8d8;
+  line-height: 1.7;
+  font-style: italic;
+}
+.fc-hint {
+  position: absolute;
+  bottom: 12px;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.fc-front .fc-hint { color: #c0b8a8; }
+.fc-back .fc-hint { color: #6a5a48; }
+.fc-num {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 0.68rem;
+}
+.fc-front .fc-num { color: #d0c8b8; }
+.fc-back .fc-num { color: #6a5a48; }
+
+.fc-controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.btn {
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  font-family: Georgia, serif;
+  border-radius: 12px;
+  border: none;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.btn:active { opacity: 0.7; transform: scale(0.97); }
+.btn-nav {
+  flex: 1;
+  padding: 15px;
+  font-size: 0.95rem;
+  background: #e8e0d0;
+  color: #1c1a17;
+  border: 2px solid #d0c8b8;
+}
+.btn-nav.primary {
+  background: #2c1f0e;
+  color: #f0e8d8;
+  border-color: #2c1f0e;
+}
+.btn-full {
+  width: 100%;
+  padding: 14px;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: transparent;
+  color: #8a7e6e;
+  border: 2px dashed #d0c8b8;
+  border-radius: 12px;
 }
 
-.card {
-width: 100%;
-height: 280px;
-position: relative;
-transform-style: preserve-3d;
-transition: transform 0.5s ease;
-border-radius: 16px;
+/* ── QUIZ MODE SELECT ── */
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 8px;
+}
+.quiz-option-card {
+  background: #fff;
+  border: 2px solid #e0d8cc;
+  border-radius: 14px;
+  padding: 24px 20px;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.quiz-option-card:hover { border-color: #8b5e3c; box-shadow: 0 4px 16px rgba(139,94,60,0.1); }
+.quiz-option-card:active { opacity: 0.8; }
+.qo-name { font-size: 1.05rem; font-weight: bold; margin-bottom: 6px; }
+.qo-desc { font-size: 0.82rem; color: #8a7e6e; line-height: 1.5; font-style: italic; }
+
+/* ── TEST LENGTH SELECT ── */
+.length-options {
+  display: flex;
+  gap: 12px;
+  margin: 20px 0;
+}
+.length-btn {
+  flex: 1;
+  padding: 18px 8px;
+  background: #fff;
+  border: 2px solid #e0d8cc;
+  border-radius: 12px;
+  font-family: Georgia, serif;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #1c1a17;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.2s, background 0.2s;
+}
+.length-btn:hover, .length-btn.selected { border-color: #8b5e3c; background: #8b5e3c; color: #fff; }
+.length-btn:active { opacity: 0.8; }
+.start-btn {
+  width: 100%;
+  padding: 18px;
+  background: #2c1f0e;
+  color: #f0e8d8;
+  border: none;
+  border-radius: 14px;
+  font-family: Georgia, serif;
+  font-size: 1rem;
+  font-weight: bold;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  margin-top: 8px;
+}
+.start-btn:active { opacity: 0.8; }
+.start-btn:disabled { opacity: 0.4; cursor: default; }
+
+/* ── QUIZ QUESTION ── */
+.q-box {
+  background: #fff;
+  border: 2px solid #e0d8cc;
+  border-radius: 16px;
+  padding: 24px 20px;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.q-label {
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #8b5e3c;
+  margin-bottom: 12px;
+}
+.q-text {
+  font-size: clamp(0.9rem, 3vw, 1.05rem);
+  line-height: 1.7;
+  color: #1c1a17;
+  font-style: italic;
 }
 
-.card.flipped {
-transform: rotateY(180deg);
+.options-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.opt-btn {
+  width: 100%;
+  padding: 16px 18px;
+  background: #fff;
+  border: 2px solid #e0d8cc;
+  border-radius: 12px;
+  font-family: Georgia, serif;
+  font-size: 0.9rem;
+  color: #1c1a17;
+  cursor: pointer;
+  text-align: left;
+  line-height: 1.4;
+  transition: border-color 0.15s, background 0.15s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.opt-btn:hover:not(:disabled) { border-color: #8b5e3c; background: #fdf8f3; }
+.opt-btn:active:not(:disabled) { transform: scale(0.99); }
+.opt-btn.correct { background: #e8f5e9; border-color: #4caf50; color: #1b5e20; }
+.opt-btn.wrong { background: #fdecea; border-color: #e53935; color: #7f0000; }
+.opt-btn.reveal { background: #e8f5e9; border-color: #4caf50; color: #1b5e20; }
+.opt-btn:disabled { cursor: default; }
+
+.feedback-box {
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  display: none;
+}
+.feedback-box.show { display: block; }
+.feedback-box.correct { background: #e8f5e9; border: 2px solid #4caf50; color: #1b5e20; }
+.feedback-box.wrong { background: #fdecea; border: 2px solid #e53935; color: #7f0000; }
+
+.next-q-btn {
+  width: 100%;
+  padding: 16px;
+  background: #2c1f0e;
+  color: #f0e8d8;
+  border: none;
+  border-radius: 12px;
+  font-family: Georgia, serif;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: none;
+}
+.next-q-btn.show { display: block; }
+.next-q-btn:active { opacity: 0.8; }
+
+/* ── RESULTS ── */
+.results-hero {
+  background: #2c1f0e;
+  border-radius: 20px;
+  padding: 36px 24px;
+  text-align: center;
+  margin-bottom: 24px;
+  color: #f0e8d8;
+}
+.results-score {
+  font-size: 3.5rem;
+  font-weight: bold;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.results-label { font-size: 0.85rem; letter-spacing: 0.12em; text-transform: uppercase; color: #c9a07a; margin-bottom: 16px; }
+.results-msg { font-size: 1rem; font-style: italic; color: #d0c0a8; line-height: 1.5; }
+
+.wrong-section { margin-bottom: 24px; }
+.wrong-title {
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #8a7e6e;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e0d8cc;
+}
+.wrong-item {
+  background: #fff;
+  border: 2px solid #fdecea;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+.wrong-term { font-weight: bold; font-size: 0.95rem; color: #1c1a17; margin-bottom: 4px; }
+.wrong-your { font-size: 0.8rem; color: #c62828; font-style: italic; margin-bottom: 2px; }
+.wrong-correct { font-size: 0.8rem; color: #2e7d32; font-style: italic; }
+
+.results-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.action-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  font-family: Georgia, serif;
+  font-size: 0.95rem;
+  cursor: pointer;
+  border: none;
+  -webkit-appearance: none;
+}
+.action-btn:active { opacity: 0.8; }
+.action-btn.primary { background: #2c1f0e; color: #f0e8d8; }
+.action-btn.secondary { background: #e8e0d0; color: #1c1a17; border: 2px solid #d0c8b8; }
+
+/* ── REVIEW FLASHCARDS (wrong ones) ── */
+.review-header {
+  background: #fdecea;
+  border: 2px solid #e53935;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  font-size: 0.85rem;
+  color: #7f0000;
+  line-height: 1.5;
 }
 
-.face {
-position: absolute;
-width: 100%;
-height: 100%;
-backface-visibility: hidden;
--webkit-backface-visibility: hidden;
-border-radius: 16px;
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-padding: 28px 24px;
-text-align: center;
-}
-
-.front {
-background: #ffffff;
-border: 2px solid #d0c8b8;
-box-shadow: 0 4px 20px rgba(0,0,0,0.10);
-}
-
-.back {
-background: #2c1f0e;
-border: 2px solid #2c1f0e;
-box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-transform: rotateY(180deg);
-}
-
-.face-label {
-font-size: 0.65rem;
-letter-spacing: 0.2em;
-text-transform: uppercase;
-margin-bottom: 16px;
-}
-
-.front .face-label { color: #8b5e3c; }
-.back .face-label  { color: #c9a07a; }
-
-.term {
-font-size: 1.5rem;
-font-weight: bold;
-color: #1a1a1a;
-line-height: 1.3;
-}
-
-.definition {
-font-size: 0.95rem;
-color: #f0e8d8;
-line-height: 1.7;
-font-style: italic;
-}
-
-.hint {
-position: absolute;
-bottom: 14px;
-font-size: 0.65rem;
-letter-spacing: 0.12em;
-text-transform: uppercase;
-}
-
-.front .hint { color: #aaa; }
-.back  .hint { color: #7a6a58; }
-
-.card-num {
-position: absolute;
-top: 12px;
-right: 16px;
-font-size: 0.7rem;
-}
-
-.front .card-num { color: #ccc; }
-.back  .card-num { color: #5a4a38; }
-
-/* Buttons */
-.controls {
-display: flex;
-gap: 12px;
-width: 100%;
-max-width: 460px;
-margin-bottom: 14px;
-}
-
-button {
--webkit-appearance: none;
-appearance: none;
-cursor: pointer;
-font-family: Georgia, serif;
-border-radius: 12px;
-font-size: 1rem;
-padding: 16px;
-transition: opacity 0.15s;
-border: none;
-}
-
-button:active { opacity: 0.7; }
-
-.btn-prev {
-flex: 1;
-background: #e8e0d0;
-color: #1a1a1a;
-border: 2px solid #d0c8b8;
-}
-
-.btn-next {
-flex: 1;
-background: #2c1f0e;
-color: #f0e8d8;
-}
-
-.btn-shuffle {
-width: 100%;
-max-width: 460px;
-background: transparent;
-border: 2px dashed #c0b8a8 !important;
-color: #888;
-font-size: 0.8rem;
-letter-spacing: 0.1em;
-text-transform: uppercase;
-padding: 14px;
-border-radius: 12px;
-}
+/* ── UTILITY ── */
+button { -webkit-appearance: none; appearance: none; }
 </style>
-
 </head>
 <body>
 
-<header>
-  <h1>World History</h1>
-  <div class="progress-wrap">
-    <div class="progress-fill" id="prog"></div>
-  </div>
-  <div class="counter" id="ctr">1 / 60</div>
-</header>
-
-<div class="scene" id="scene">
-  <div class="card" id="card">
-    <div class="face front">
-      <div class="card-num" id="numFront">01</div>
-      <div class="face-label">Term</div>
-      <div class="term" id="termEl">Loading...</div>
-      <div class="hint">Tap to reveal definition</div>
+<!-- LANDING -->
+<div id="landing" class="active">
+  <div class="app-title">World History</div>
+  <div class="app-subtitle">60 Terms · Study Tool</div>
+  <div class="mode-cards">
+    <div class="mode-card" onclick="showScreen('flashcards')">
+      <div class="mode-icon">🃏</div>
+      <div class="mode-name">Flashcards</div>
+      <div class="mode-desc">Flip through all 60 terms and definitions. Tap to reveal, swipe to navigate.</div>
     </div>
-    <div class="face back">
-      <div class="card-num" id="numBack">01</div>
-      <div class="face-label">Definition</div>
-      <div class="definition" id="defEl"></div>
-      <div class="hint">Tap to flip back</div>
+    <div class="mode-card" onclick="showScreen('quiz-select')">
+      <div class="mode-icon">📝</div>
+      <div class="mode-name">Quiz</div>
+      <div class="mode-desc">Multiple choice questions — practice with instant feedback or take a timed test and see your score at the end.</div>
     </div>
   </div>
 </div>
 
-<div class="controls">
-  <button class="btn-prev" id="btnPrev">← Prev</button>
-  <button class="btn-next" id="btnNext">Next →</button>
+<!-- FLASHCARDS -->
+<div id="flashcards" class="screen">
+  <div class="screen-header">
+    <button class="back-btn" onclick="showScreen('landing')">← Home</button>
+    <div class="screen-title">Flashcards</div>
+  </div>
+  <div class="progress-wrap"><div class="progress-fill" id="fc-prog"></div></div>
+  <div class="progress-label" id="fc-label">1 / 60</div>
+  <div class="scene" id="fc-scene">
+    <div class="fc-card" id="fc-card">
+      <div class="fc-face fc-front">
+        <div class="fc-num" id="fc-num-f">01</div>
+        <div class="fc-label">Term</div>
+        <div class="fc-term" id="fc-term"></div>
+        <div class="fc-hint">Tap to reveal definition</div>
+      </div>
+      <div class="fc-face fc-back">
+        <div class="fc-num" id="fc-num-b">01</div>
+        <div class="fc-label">Definition</div>
+        <div class="fc-def" id="fc-def"></div>
+        <div class="fc-hint">Tap to flip back</div>
+      </div>
+    </div>
+  </div>
+  <div class="fc-controls">
+    <button class="btn btn-nav" id="fc-prev">← Prev</button>
+    <button class="btn btn-nav primary" id="fc-next">Next →</button>
+  </div>
+  <button class="btn btn-full" id="fc-shuffle">⇄ Shuffle Cards</button>
 </div>
-<button class="btn-shuffle" id="btnShuffle">⇄ Shuffle Cards</button>
+
+<!-- QUIZ MODE SELECT -->
+<div id="quiz-select" class="screen">
+  <div class="screen-header">
+    <button class="back-btn" onclick="showScreen('landing')">← Home</button>
+    <div class="screen-title">Quiz</div>
+  </div>
+  <div class="quiz-options">
+    <div class="quiz-option-card" onclick="startPractice()">
+      <div class="qo-name">⚡ Practice Mode</div>
+      <div class="qo-desc">All 60 questions, randomized. You see immediately whether each answer is right or wrong before moving on. Great for learning as you go.</div>
+    </div>
+    <div class="quiz-option-card" onclick="showScreen('test-select')">
+      <div class="qo-name">🎯 Test Mode</div>
+      <div class="qo-desc">Choose 20, 40, or 60 questions. No feedback during the test — you find out your score at the end, then review the ones you missed as flashcards.</div>
+    </div>
+  </div>
+</div>
+
+<!-- TEST LENGTH SELECT -->
+<div id="test-select" class="screen">
+  <div class="screen-header">
+    <button class="back-btn" onclick="showScreen('quiz-select')">← Back</button>
+    <div class="screen-title">Test Mode</div>
+  </div>
+  <p style="font-size:0.9rem; color:#8a7e6e; margin-bottom:20px; font-style:italic;">How many questions?</p>
+  <div class="length-options">
+    <button class="length-btn" onclick="selectLength(20, this)">20</button>
+    <button class="length-btn" onclick="selectLength(40, this)">40</button>
+    <button class="length-btn" onclick="selectLength(60, this)">60</button>
+  </div>
+  <button class="start-btn" id="start-test-btn" onclick="startTest()" disabled>Select a length to begin</button>
+</div>
+
+<!-- PRACTICE QUIZ -->
+<div id="practice" class="screen">
+  <div class="screen-header">
+    <button class="back-btn" onclick="confirmExit('quiz-select')">← Quit</button>
+    <div class="screen-title">Practice</div>
+  </div>
+  <div class="progress-wrap"><div class="progress-fill" id="pq-prog"></div></div>
+  <div class="progress-label" id="pq-label"></div>
+  <div class="q-box">
+    <div class="q-label">Definition</div>
+    <div class="q-text" id="pq-question"></div>
+  </div>
+  <div class="options-grid" id="pq-options"></div>
+  <div class="feedback-box" id="pq-feedback"></div>
+  <button class="next-q-btn" id="pq-next">Next Question →</button>
+</div>
+
+<!-- TEST QUIZ -->
+<div id="test" class="screen">
+  <div class="screen-header">
+    <button class="back-btn" onclick="confirmExit('test-select')">← Quit</button>
+    <div class="screen-title">Test</div>
+  </div>
+  <div class="progress-wrap"><div class="progress-fill" id="tq-prog"></div></div>
+  <div class="progress-label" id="tq-label"></div>
+  <div class="q-box">
+    <div class="q-label">Definition</div>
+    <div class="q-text" id="tq-question"></div>
+  </div>
+  <div class="options-grid" id="tq-options"></div>
+  <button class="next-q-btn show" id="tq-next" style="display:none;">Next →</button>
+</div>
+
+<!-- RESULTS -->
+<div id="results" class="screen">
+  <div class="screen-header">
+    <button class="back-btn" onclick="showScreen('landing')">← Home</button>
+    <div class="screen-title">Results</div>
+  </div>
+  <div class="results-hero">
+    <div class="results-score" id="res-score"></div>
+    <div class="results-label" id="res-sublabel"></div>
+    <div class="results-msg" id="res-msg"></div>
+  </div>
+  <div class="wrong-section" id="wrong-section"></div>
+  <div class="results-actions">
+    <button class="action-btn primary" id="res-review-btn" onclick="startWrongReview()" style="display:none;">📖 Review Missed Cards as Flashcards</button>
+    <button class="action-btn secondary" onclick="showScreen('test-select')">Try Again</button>
+    <button class="action-btn secondary" onclick="showScreen('landing')">← Home</button>
+  </div>
+</div>
+
+<!-- WRONG REVIEW (flashcard mode for missed questions) -->
+<div id="wrong-review" class="screen">
+  <div class="screen-header">
+    <button class="back-btn" onclick="showScreen('results')">← Results</button>
+    <div class="screen-title">Review</div>
+  </div>
+  <div class="review-header" id="wr-header"></div>
+  <div class="progress-wrap"><div class="progress-fill" id="wr-prog"></div></div>
+  <div class="progress-label" id="wr-label"></div>
+  <div class="scene" id="wr-scene">
+    <div class="fc-card" id="wr-card">
+      <div class="fc-face fc-front">
+        <div class="fc-num" id="wr-num-f">01</div>
+        <div class="fc-label">Term</div>
+        <div class="fc-term" id="wr-term"></div>
+        <div class="fc-hint">Tap to see definition</div>
+      </div>
+      <div class="fc-face fc-back">
+        <div class="fc-num" id="wr-num-b">01</div>
+        <div class="fc-label">Definition</div>
+        <div class="fc-def" id="wr-def"></div>
+        <div class="fc-hint">Tap to flip back</div>
+      </div>
+    </div>
+  </div>
+  <div class="fc-controls">
+    <button class="btn btn-nav" id="wr-prev">← Prev</button>
+    <button class="btn btn-nav primary" id="wr-next">Next →</button>
+  </div>
+</div>
 
 <script>
-var data = [
+// ── DATA ──
+var ALL = [
   ["Sepoys","Indian soldiers recruited and trained by the British East India Company (later British army) to maintain control over India."],
   ["British Raj","Direct British colonial rule over India from 1858 (after the Sepoy Mutiny) until independence in 1947."],
   ["Robert Clive","British East India Company general who won the Battle of Plassey (1757), laying the foundation for British control of Bengal and eventually all of India."],
@@ -300,65 +686,369 @@ var data = [
   ["Sino-Japanese War","1894-1895 war in which Japan decisively defeated Qing China and gained Taiwan, Pescadores, and dominant influence in Korea."]
 ];
 
-var cards = data.slice();
-var idx = 0;
-var isFlipped = false;
+// ── STATE ──
+var fcCards = ALL.slice();
+var fcIdx = 0;
+var fcFlipped = false;
 
-function render() {
-  var n = String(idx + 1).padStart(2, '0');
-  document.getElementById('numFront').textContent = n;
-  document.getElementById('numBack').textContent = n;
-  document.getElementById('termEl').textContent = cards[idx][0];
-  document.getElementById('defEl').textContent = cards[idx][1];
-  document.getElementById('ctr').textContent = (idx + 1) + ' / ' + cards.length;
-  document.getElementById('prog').style.width = (((idx + 1) / cards.length) * 100) + '%';
-  isFlipped = false;
-  document.getElementById('card').classList.remove('flipped');
+var pqQuestions = [];
+var pqIdx = 0;
+var pqAnswered = false;
+
+var tqQuestions = [];
+var tqIdx = 0;
+var tqLength = 0;
+var tqAnswers = []; // {term, correct, chosen}
+var tqSelected = null;
+
+var wrongCards = [];
+var wrIdx = 0;
+var wrFlipped = false;
+
+// ── SCREEN NAV ──
+function showScreen(id) {
+  document.querySelectorAll('.screen, #landing').forEach(function(el) {
+    el.classList.remove('active');
+  });
+  var el = document.getElementById(id);
+  el.classList.add('active');
+  window.scrollTo(0, 0);
 }
 
-document.getElementById('scene').addEventListener('click', function() {
-  isFlipped = !isFlipped;
-  document.getElementById('card').classList.toggle('flipped', isFlipped);
-});
+function confirmExit(dest) {
+  if (confirm('Quit this session? Your progress will be lost.')) showScreen(dest);
+}
 
-document.getElementById('btnPrev').addEventListener('click', function(e) {
-  e.stopPropagation();
-  idx = (idx - 1 + cards.length) % cards.length;
-  render();
-});
-
-document.getElementById('btnNext').addEventListener('click', function(e) {
-  e.stopPropagation();
-  idx = (idx + 1) % cards.length;
-  render();
-});
-
-document.getElementById('btnShuffle').addEventListener('click', function(e) {
-  e.stopPropagation();
-  for (var i = cards.length - 1; i > 0; i--) {
+// ── SHUFFLE ──
+function shuffle(arr) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
     var j = Math.floor(Math.random() * (i + 1));
-    var tmp = cards[i]; cards[i] = cards[j]; cards[j] = tmp;
+    var t = a[i]; a[i] = a[j]; a[j] = t;
   }
-  idx = 0;
-  render();
+  return a;
+}
+
+// ── FLASHCARDS ──
+function fcRender() {
+  var n = String(fcIdx + 1).padStart(2, '0');
+  document.getElementById('fc-num-f').textContent = n;
+  document.getElementById('fc-num-b').textContent = n;
+  document.getElementById('fc-term').textContent = fcCards[fcIdx][0];
+  document.getElementById('fc-def').textContent = fcCards[fcIdx][1];
+  document.getElementById('fc-label').textContent = (fcIdx + 1) + ' / ' + fcCards.length;
+  document.getElementById('fc-prog').style.width = (((fcIdx + 1) / fcCards.length) * 100) + '%';
+  fcFlipped = false;
+  document.getElementById('fc-card').classList.remove('flipped');
+}
+
+document.getElementById('fc-scene').addEventListener('click', function() {
+  fcFlipped = !fcFlipped;
+  document.getElementById('fc-card').classList.toggle('flipped', fcFlipped);
 });
 
-// Swipe
-var swipeStartX = 0;
-document.getElementById('scene').addEventListener('touchstart', function(e) {
-  swipeStartX = e.touches[0].clientX;
-}, {passive: true});
-document.getElementById('scene').addEventListener('touchend', function(e) {
-  var dx = e.changedTouches[0].clientX - swipeStartX;
-  if (Math.abs(dx) > 60) {
-    if (dx < 0) { idx = (idx + 1) % cards.length; }
-    else { idx = (idx - 1 + cards.length) % cards.length; }
-    render();
+document.getElementById('fc-prev').addEventListener('click', function(e) {
+  e.stopPropagation();
+  fcIdx = (fcIdx - 1 + fcCards.length) % fcCards.length;
+  fcRender();
+});
+
+document.getElementById('fc-next').addEventListener('click', function(e) {
+  e.stopPropagation();
+  fcIdx = (fcIdx + 1) % fcCards.length;
+  fcRender();
+});
+
+document.getElementById('fc-shuffle').addEventListener('click', function(e) {
+  e.stopPropagation();
+  fcCards = shuffle(ALL);
+  fcIdx = 0;
+  fcRender();
+});
+
+// FC swipe
+var fcSwipeX = 0;
+document.getElementById('fc-scene').addEventListener('touchstart', function(e) { fcSwipeX = e.touches[0].clientX; }, {passive:true});
+document.getElementById('fc-scene').addEventListener('touchend', function(e) {
+  var dx = e.changedTouches[0].clientX - fcSwipeX;
+  if (Math.abs(dx) > 55) {
+    fcIdx = dx < 0 ? (fcIdx + 1) % fcCards.length : (fcIdx - 1 + fcCards.length) % fcCards.length;
+    fcRender();
   }
-}, {passive: true});
+}, {passive:true});
 
-render();
+// ── MAKE QUESTION ──
+function makeQuestion(cardIdx, pool) {
+  var correct = pool[cardIdx];
+  var distractors = shuffle(pool.filter(function(_, i) { return i !== cardIdx; })).slice(0, 3);
+  var options = shuffle([correct].concat(distractors));
+  return { definition: correct[1], correctTerm: correct[0], options: options.map(function(o) { return o[0]; }) };
+}
+
+// ── PRACTICE ──
+function startPractice() {
+  var shuffled = shuffle(ALL);
+  pqQuestions = shuffled.map(function(_, i) { return makeQuestion(i, shuffled); });
+  pqIdx = 0;
+  pqAnswered = false;
+  showScreen('practice');
+  pqRender();
+}
+
+function pqRender() {
+  var q = pqQuestions[pqIdx];
+  var total = pqQuestions.length;
+  document.getElementById('pq-label').textContent = (pqIdx + 1) + ' / ' + total;
+  document.getElementById('pq-prog').style.width = (((pqIdx + 1) / total) * 100) + '%';
+  document.getElementById('pq-question').textContent = q.definition;
+
+  var grid = document.getElementById('pq-options');
+  grid.innerHTML = '';
+  q.options.forEach(function(opt) {
+    var btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.textContent = opt;
+    btn.addEventListener('click', function() { pqAnswer(opt, btn, q); });
+    grid.appendChild(btn);
+  });
+
+  var fb = document.getElementById('pq-feedback');
+  fb.className = 'feedback-box';
+  fb.textContent = '';
+
+  var nextBtn = document.getElementById('pq-next');
+  nextBtn.className = 'next-q-btn';
+  nextBtn.textContent = pqIdx < pqQuestions.length - 1 ? 'Next Question →' : 'Finish Practice';
+  pqAnswered = false;
+}
+
+function pqAnswer(chosen, btn, q) {
+  if (pqAnswered) return;
+  pqAnswered = true;
+  var correct = chosen === q.correctTerm;
+
+  // Color all buttons
+  var btns = document.getElementById('pq-options').querySelectorAll('.opt-btn');
+  btns.forEach(function(b) {
+    b.disabled = true;
+    if (b.textContent === q.correctTerm) b.classList.add('correct');
+    else if (b.textContent === chosen && !correct) b.classList.add('wrong');
+  });
+
+  var fb = document.getElementById('pq-feedback');
+  fb.className = 'feedback-box show ' + (correct ? 'correct' : 'wrong');
+  fb.textContent = correct ? '✓ Correct!' : '✗ The answer was: ' + q.correctTerm;
+
+  document.getElementById('pq-next').classList.add('show');
+}
+
+document.getElementById('pq-next').addEventListener('click', function() {
+  pqIdx++;
+  if (pqIdx >= pqQuestions.length) {
+    showScreen('landing');
+    alert('Practice complete! Great work going through all 60 questions.');
+  } else {
+    pqRender();
+  }
+});
+
+// ── TEST ──
+var selectedLengthBtn = null;
+
+function selectLength(n, btn) {
+  tqLength = n;
+  if (selectedLengthBtn) selectedLengthBtn.classList.remove('selected');
+  btn.classList.add('selected');
+  selectedLengthBtn = btn;
+  var startBtn = document.getElementById('start-test-btn');
+  startBtn.disabled = false;
+  startBtn.textContent = 'Start ' + n + '-Question Test';
+}
+
+function startTest() {
+  if (!tqLength) return;
+  var pool = shuffle(ALL).slice(0, tqLength);
+  tqQuestions = pool.map(function(_, i) { return makeQuestion(i, pool); });
+  tqIdx = 0;
+  tqAnswers = [];
+  tqSelected = null;
+
+  // Reset length selector
+  if (selectedLengthBtn) selectedLengthBtn.classList.remove('selected');
+  selectedLengthBtn = null;
+  document.getElementById('start-test-btn').disabled = true;
+  document.getElementById('start-test-btn').textContent = 'Select a length to begin';
+
+  showScreen('test');
+  tqRender();
+}
+
+function tqRender() {
+  var q = tqQuestions[tqIdx];
+  var total = tqQuestions.length;
+  document.getElementById('tq-label').textContent = (tqIdx + 1) + ' / ' + total;
+  document.getElementById('tq-prog').style.width = (((tqIdx + 1) / total) * 100) + '%';
+  document.getElementById('tq-question').textContent = q.definition;
+
+  var grid = document.getElementById('tq-options');
+  grid.innerHTML = '';
+  tqSelected = null;
+
+  q.options.forEach(function(opt) {
+    var btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.textContent = opt;
+    btn.addEventListener('click', function() { tqSelect(opt, btn); });
+    grid.appendChild(btn);
+  });
+
+  var nextBtn = document.getElementById('tq-next');
+  nextBtn.style.display = 'none';
+  nextBtn.textContent = tqIdx < tqQuestions.length - 1 ? 'Next →' : 'Finish & See Score';
+}
+
+function tqSelect(chosen, btn) {
+  if (tqSelected !== null) {
+    // Deselect previous
+    document.getElementById('tq-options').querySelectorAll('.opt-btn').forEach(function(b) {
+      b.style.borderColor = '';
+      b.style.background = '';
+    });
+  }
+  tqSelected = chosen;
+  btn.style.borderColor = '#8b5e3c';
+  btn.style.background = '#fdf8f3';
+  document.getElementById('tq-next').style.display = 'block';
+}
+
+document.getElementById('tq-next').addEventListener('click', function() {
+  if (tqSelected === null) return;
+  var q = tqQuestions[tqIdx];
+  tqAnswers.push({ term: q.correctTerm, definition: q.definition, correct: q.correctTerm, chosen: tqSelected });
+  tqIdx++;
+  if (tqIdx >= tqQuestions.length) {
+    showResults();
+  } else {
+    tqRender();
+  }
+});
+
+// ── RESULTS ──
+function showResults() {
+  var correct = tqAnswers.filter(function(a) { return a.chosen === a.correct; }).length;
+  var total = tqAnswers.length;
+  var pct = Math.round((correct / total) * 100);
+
+  document.getElementById('res-score').textContent = correct + ' / ' + total;
+  document.getElementById('res-sublabel').textContent = pct + '% correct';
+
+  var msg;
+  if (pct === 100) msg = 'Perfect score! Outstanding work.';
+  else if (pct >= 90) msg = 'Excellent — you really know this material.';
+  else if (pct >= 75) msg = 'Strong performance. Review the ones you missed and you\'ll have it locked in.';
+  else if (pct >= 60) msg = 'Good foundation. The flashcard review below will help cement the gaps.';
+  else msg = 'Keep at it — use the flashcard review to drill the ones you missed.';
+  document.getElementById('res-msg').textContent = msg;
+
+  var wrong = tqAnswers.filter(function(a) { return a.chosen !== a.correct; });
+  wrongCards = wrong.map(function(a) { return [a.correct, a.definition]; });
+
+  var ws = document.getElementById('wrong-section');
+  ws.innerHTML = '';
+
+  if (wrong.length > 0) {
+    var title = document.createElement('div');
+    title.className = 'wrong-title';
+    title.textContent = 'Missed (' + wrong.length + ')';
+    ws.appendChild(title);
+
+    wrong.forEach(function(a) {
+      var item = document.createElement('div');
+      item.className = 'wrong-item';
+      item.innerHTML = '<div class="wrong-term">' + a.correct + '</div>' +
+        '<div class="wrong-your">Your answer: ' + a.chosen + '</div>' +
+        '<div class="wrong-correct">Correct: ' + a.correct + '</div>';
+      ws.appendChild(item);
+    });
+
+    document.getElementById('res-review-btn').style.display = 'block';
+  } else {
+    document.getElementById('res-review-btn').style.display = 'none';
+  }
+
+  showScreen('results');
+}
+
+// ── WRONG REVIEW ──
+function startWrongReview() {
+  wrIdx = 0;
+  wrFlipped = false;
+  document.getElementById('wr-header').textContent =
+    'You missed ' + wrongCards.length + ' question' + (wrongCards.length !== 1 ? 's' : '') +
+    '. Flip through them here to review the correct answers.';
+  showScreen('wrong-review');
+  wrRender();
+}
+
+function wrRender() {
+  var n = String(wrIdx + 1).padStart(2, '0');
+  document.getElementById('wr-num-f').textContent = n;
+  document.getElementById('wr-num-b').textContent = n;
+  document.getElementById('wr-term').textContent = wrongCards[wrIdx][0];
+  document.getElementById('wr-def').textContent = wrongCards[wrIdx][1];
+  document.getElementById('wr-label').textContent = (wrIdx + 1) + ' / ' + wrongCards.length;
+  document.getElementById('wr-prog').style.width = (((wrIdx + 1) / wrongCards.length) * 100) + '%';
+  wrFlipped = false;
+  document.getElementById('wr-card').classList.remove('flipped');
+}
+
+document.getElementById('wr-scene').addEventListener('click', function() {
+  wrFlipped = !wrFlipped;
+  document.getElementById('wr-card').classList.toggle('flipped', wrFlipped);
+});
+
+document.getElementById('wr-prev').addEventListener('click', function(e) {
+  e.stopPropagation();
+  wrIdx = (wrIdx - 1 + wrongCards.length) % wrongCards.length;
+  wrRender();
+});
+
+document.getElementById('wr-next').addEventListener('click', function(e) {
+  e.stopPropagation();
+  wrIdx = (wrIdx + 1) % wrongCards.length;
+  wrRender();
+});
+
+// WR swipe
+var wrSwipeX = 0;
+document.getElementById('wr-scene').addEventListener('touchstart', function(e) { wrSwipeX = e.touches[0].clientX; }, {passive:true});
+document.getElementById('wr-scene').addEventListener('touchend', function(e) {
+  var dx = e.changedTouches[0].clientX - wrSwipeX;
+  if (Math.abs(dx) > 55) {
+    wrIdx = dx < 0 ? (wrIdx + 1) % wrongCards.length : (wrIdx - 1 + wrongCards.length) % wrongCards.length;
+    wrRender();
+  }
+}, {passive:true});
+
+// ── KEYBOARD (desktop) ──
+document.addEventListener('keydown', function(e) {
+  var active = document.querySelector('.screen.active, #landing.active');
+  if (!active) return;
+  var id = active.id;
+  if (id === 'flashcards') {
+    if (e.key === 'ArrowRight') { fcIdx = (fcIdx + 1) % fcCards.length; fcRender(); }
+    if (e.key === 'ArrowLeft') { fcIdx = (fcIdx - 1 + fcCards.length) % fcCards.length; fcRender(); }
+    if (e.key === ' ') { e.preventDefault(); fcFlipped = !fcFlipped; document.getElementById('fc-card').classList.toggle('flipped', fcFlipped); }
+  }
+  if (id === 'wrong-review') {
+    if (e.key === 'ArrowRight') { wrIdx = (wrIdx + 1) % wrongCards.length; wrRender(); }
+    if (e.key === 'ArrowLeft') { wrIdx = (wrIdx - 1 + wrongCards.length) % wrongCards.length; wrRender(); }
+    if (e.key === ' ') { e.preventDefault(); wrFlipped = !wrFlipped; document.getElementById('wr-card').classList.toggle('flipped', wrFlipped); }
+  }
+});
+
+// ── INIT ──
+fcRender();
 </script>
-
 </body>
 </html>
